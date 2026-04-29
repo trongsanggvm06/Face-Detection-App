@@ -41,7 +41,7 @@
       <artifactId>opencv</artifactId>
       <version>4.9.0</version>
       <scope>system</scope>
-      <systemPath>${project.basedir}/lib/opencv-490.jar</systemPath>
+      <systemPath>D:\NAM_2\JAVA\BTL-JAVA\FaceDetectionApp\lib\opencv-490.jar</systemPath>
     </dependency>
 
   </dependencies>
