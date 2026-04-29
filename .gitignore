@@ -1,0 +1,15 @@
+# Build output
+target/
+*.class
+
+# Thư mục zip lồng nhau - bỏ qua (đã có file gốc ở root)
+Face-Detection-App-main/
+
+# IDE
+.vscode/
+*.iml
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
