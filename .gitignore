@@ -1,14 +1,9 @@
-# Build output
+# Build output - không cần push
 target/
 *.class
 
-# Thư mục zip lồng nhau - bỏ qua (đã có file gốc ở root)
+# Thư mục zip lồng nhau - bỏ qua (nội dung đã có ở root)
 Face-Detection-App-main/
-
-# IDE
-.vscode/
-*.iml
-.idea/
 
 # OS
 .DS_Store
