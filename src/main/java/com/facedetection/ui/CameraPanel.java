@@ -62,7 +62,7 @@ public class CameraPanel extends JPanel{
         super.paintComponent(g);
 
         if(image!=null){
-            g.drawImage(image,0,0,getWidth(),getHeight(),null);
+            g.drawImage(image,getWidth(),0,-getWidth(),getHeight(),null);
         }else{
             g.setColor(Color.WHITE);
             g.drawString("Đang mở webcam...",getWidth()/2-60,getHeight()/2);
