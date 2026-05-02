@@ -1,4 +1,4 @@
-package com.facedetection;
+package com.facedetection.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
