@@ -8,7 +8,7 @@ import java.io.Serializable;
  * Model lưu thông tin một khuôn mặt đã đăng ký.
  * Implement Serializable để lưu vào file gallery.dat bằng ObjectOutputStream.
  *
- * @author Viết Khánh
+ * @author Viết Khanh
  */
 public class GalleryEntry implements Serializable {
 
@@ -21,12 +21,17 @@ public class GalleryEntry implements Serializable {
     private float[] embedding;
 
     public GalleryEntry(String name, float[] embedding) {
-        this.name      = name;
+        this.name = name;
         this.embedding = embedding;
     }
 
-    public String getName()      { return name; }
-    public float[] getEmbedding(){ return embedding; }
+    public String getName() {
+        return name;
+    }
+
+    public float[] getEmbedding() {
+        return embedding;
+    }
 
     @Override
     public String toString() {
