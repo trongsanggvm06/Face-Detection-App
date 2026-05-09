@@ -252,8 +252,7 @@ public class RegisterPanel extends JPanel {
         if (embedding != null && savedDB) {
             msg = "✓ Đã đăng ký khuôn mặt thành công!\n"
                 + "Tên: " + name + "\n"
-                + "Embedding: " + embedding.length + " chiều\n"
-                + "Đã lưu gallery.dat + DB";
+                + "Đã lưu vào gallery.dat";
         } else if (savedDB) {
             msg = "✓ Đã đăng ký: " + name + "\n(Lưu DB thành công, gallery.dat chưa lưu được)";
         } else {
