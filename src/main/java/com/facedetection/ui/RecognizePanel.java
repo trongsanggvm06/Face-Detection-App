@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * RecognizePanel.java – Nhiệm vụ 14 (Khanh – Chính)
@@ -288,7 +289,7 @@ public class RecognizePanel extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     nameLabel.setText(recognizedName);
                     nameLabel.setForeground(recognizedName.equals("UNKNOWN") ? DANGER : SUCCESS);
-                    scoreLabel.setText(String.format("Độ tin cậy: %.1f%%", score));
+                    scoreLabel.setText(String.format(Locale.US, "Do tin cay: %.1f%%", score));
                     statusLabel.setText("Đang nhận diện...");
                     statusLabel.setForeground(SUCCESS);
                 });
@@ -306,7 +307,7 @@ public class RecognizePanel extends JPanel {
 
                     // Thêm vào bảng lịch sử (giữ tối đa 10 dòng)
                     final String n = recognizedName;
-                    final String sc = String.format("%.1f%%", score);
+                    final String sc = String.format(Locale.US, "%.1f%%", score);
                     final String t = timeStr;
                     SwingUtilities.invokeLater(() -> {
                         tableModel.insertRow(0, new Object[] { t, n, sc });
@@ -320,7 +321,7 @@ public class RecognizePanel extends JPanel {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                System.err.println("[RecognizePanel] Lỗi nhận diện: " + e.getMessage());
+                System.err.println("[RecognizePanel] Loi nhan dien: " + e.getMessage());
             }
         }
     }
@@ -345,7 +346,7 @@ public class RecognizePanel extends JPanel {
             bestName = "UNKNOWN";
         }
 
-        return new String[] { bestName, String.format("%.1f", bestScore * 100) };
+        return new String[] { bestName, String.format(Locale.US, "%.1f", bestScore * 100) };
     }
 
     private double cosineSimilarity(float[] a, float[] b) {
