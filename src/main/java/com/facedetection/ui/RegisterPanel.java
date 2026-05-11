@@ -20,17 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RegisterPanel.java – Nhiệm vụ 13 (Khánh – Chính)
+ * RegisterPanel.java – Nhiệm vụ 13 (Khanh – Chính)
  *
  * UI đăng ký khuôn mặt:
- *   1. Nhập tên người dùng
- *   2. Chụp ảnh từ webcam
- *   3. Detect khuôn mặt + trích xuất embedding (SFace)
- *   4. Lưu GalleryEntry vào gallery.dat (ObjectOutputStream)
- *   5. Ghi log vào DB (DetectionLogDAO)
+ * 1. Nhập tên người dùng
+ * 2. Chụp ảnh từ webcam
+ * 3. Detect khuôn mặt + trích xuất embedding (SFace)
+ * 4. Lưu GalleryEntry vào gallery.dat (ObjectOutputStream)
+ * 5. Ghi log vào DB (DetectionLogDAO)
  *
  * Pass condition: file gallery.dat tồn tại sau khi đăng ký,
- *                 restart app vẫn nhận được người đó.
+ * restart app vẫn nhận được người đó.
  *
  * @author Viết Khánh
  */
@@ -40,22 +40,22 @@ public class RegisterPanel extends JPanel {
     // UI components (giữ nguyên từ Tài)
     // -------------------------------------------------------
     JTextField txtName;
-    JLabel     previewLabel, statusLabel;
-    JButton    btnCapture, btnSave, btnCancel;
+    JLabel previewLabel, statusLabel;
+    JButton btnCapture, btnSave, btnCancel;
     CameraPanel cameraPanel;
     BufferedImage capturedImage;
 
-    Color bg      = Color.WHITE;
-    Color panel   = new Color(245, 245, 245);
-    Color text    = new Color(33, 37, 41);
+    Color bg = Color.WHITE;
+    Color panel = new Color(245, 245, 245);
+    Color text = new Color(33, 37, 41);
     Color primary = new Color(0, 123, 255);
     Color success = new Color(40, 167, 69);
-    Color danger  = new Color(220, 53, 69);
+    Color danger = new Color(220, 53, 69);
 
     // -------------------------------------------------------
     // AI & DAO (Khánh thêm)
     // -------------------------------------------------------
-    private FaceDetector   faceDetector;
+    private FaceDetector faceDetector;
     private FaceRecognizer faceRecognizer;
     private DetectionLogDAO dao;
     private GalleryRepository galleryRepo;
@@ -67,7 +67,7 @@ public class RegisterPanel extends JPanel {
 
     /** Đường dẫn các model và file gallery */
     private static final String MODEL_DETECT = "models/face_detection_yunet_2023mar.onnx";
-    private static final String MODEL_RECOG  = "models/face_recognition_sface_2021dec.onnx";
+    private static final String MODEL_RECOG = "models/face_recognition_sface_2021dec.onnx";
     private static final String GALLERY_FILE = "gallery.dat";
 
     // -------------------------------------------------------
@@ -103,12 +103,12 @@ public class RegisterPanel extends JPanel {
         previewLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         btnCapture = new JButton("Chụp");
-        btnSave    = new JButton("Lưu");
-        btnCancel  = new JButton("Hủy");
+        btnSave = new JButton("Lưu");
+        btnCancel = new JButton("Hủy");
 
         setButtonStyle(btnCapture, primary);
-        setButtonStyle(btnSave,    success);
-        setButtonStyle(btnCancel,  danger);
+        setButtonStyle(btnSave, success);
+        setButtonStyle(btnCancel, danger);
 
         statusLabel = new JLabel("Sẵn sàng");
         statusLabel.setForeground(text);
@@ -129,13 +129,11 @@ public class RegisterPanel extends JPanel {
         rightPanel.add(statusLabel);
 
         add(cameraPanel, BorderLayout.CENTER);
-        add(rightPanel,  BorderLayout.EAST);
+        add(rightPanel, BorderLayout.EAST);
 
         btnCapture.addActionListener(e -> captureImage());
         btnSave.addActionListener(e -> saveImage());
         btnCancel.addActionListener(e -> resetForm());
-
-        cameraPanel.startCamera();
 
         // Khởi tạo AI + DAO + Gallery
         initAI();
@@ -143,17 +141,22 @@ public class RegisterPanel extends JPanel {
         galleryRepo = new GalleryRepository();
     }
 
+    /** Được gọi bởi MainFrame khi tab Đăng ký được chọn */
+    public void startCamera() {
+        cameraPanel.startCamera();
+    }
+
     // -------------------------------------------------------
     // Khởi tạo FaceDetector + FaceRecognizer
     // -------------------------------------------------------
     private void initAI() {
         try {
-            faceDetector   = new FaceDetector(MODEL_DETECT);
+            faceDetector = new FaceDetector(MODEL_DETECT);
             faceRecognizer = new FaceRecognizer(MODEL_RECOG);
             System.out.println("[RegisterPanel] Đã khởi tạo AI models.");
         } catch (Exception e) {
             System.err.println("[RegisterPanel] Lỗi load model AI: " + e.getMessage());
-            faceDetector   = null;
+            faceDetector = null;
             faceRecognizer = null;
         }
     }
@@ -175,7 +178,7 @@ public class RegisterPanel extends JPanel {
         previewLabel.setIcon(new ImageIcon(img));
 
         // Convert BufferedImage → Mat để detect
-        capturedMat  = bufferedImageToMat(capturedImage);
+        capturedMat = bufferedImageToMat(capturedImage);
         detectedFaces = null;
 
         if (faceDetector != null && capturedMat != null) {
@@ -219,13 +222,13 @@ public class RegisterPanel extends JPanel {
 
         // --- Bước 1: Extract embedding ---
         float[] embedding = null;
-        double  score     = 0.0;
+        double score = 0.0;
 
         if (faceRecognizer != null && capturedMat != null) {
             try {
                 Mat feature = faceRecognizer.extractFeature(capturedMat, detectedFaces);
-                embedding   = matToFloatArray(feature);
-                score       = 1.0;   // Đăng ký mới → confidence = 1.0
+                embedding = matToFloatArray(feature);
+                score = 1.0; // Đăng ký mới → confidence = 1.0
                 System.out.println("[RegisterPanel] Đã trích xuất embedding: " + embedding.length + " chiều");
             } catch (Exception e) {
                 System.err.println("[RegisterPanel] Lỗi extract embedding: " + e.getMessage());
@@ -254,8 +257,8 @@ public class RegisterPanel extends JPanel {
         String msg;
         if (embedding != null && savedDB) {
             msg = "✓ Đã đăng ký khuôn mặt thành công!\n"
-                + "Tên: " + name + "\n"
-                + "Đã lưu vào gallery.dat";
+                    + "Tên: " + name + "\n"
+                    + "Đã lưu vào gallery.dat";
         } else if (savedDB) {
             msg = "✓ Đã đăng ký: " + name + "\n(Lưu DB thành công, gallery.dat chưa lưu được)";
         } else {
@@ -280,7 +283,7 @@ public class RegisterPanel extends JPanel {
         statusLabel.setText("Sẵn sàng");
         statusLabel.setForeground(text);
         capturedImage = null;
-        capturedMat   = null;
+        capturedMat = null;
         detectedFaces = null;
     }
 

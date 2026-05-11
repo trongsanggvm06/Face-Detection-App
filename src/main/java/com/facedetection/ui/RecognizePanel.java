@@ -24,17 +24,17 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * RecognizePanel.java – Nhiệm vụ 14 (Khánh – Chính)
+ * RecognizePanel.java – Nhiệm vụ 14 (Khanh – Chính)
  *
  * UI nhận diện khuôn mặt realtime:
- *   1. Hiển thị live webcam qua CameraPanel
- *   2. Mỗi 400ms: detect face → extract embedding → so khớp gallery
- *   3. Hiển thị tên + % confidence trên giao diện
- *   4. Ghi log vào DB (DetectionLogDAO) sau mỗi lần nhận diện thành công
+ * 1. Hiển thị live webcam qua CameraPanel
+ * 2. Mỗi 400ms: detect face → extract embedding → so khớp gallery
+ * 3. Hiển thị tên + % confidence trên giao diện
+ * 4. Ghi log vào DB (DetectionLogDAO) sau mỗi lần nhận diện thành công
  *
  * Pass condition:
- *   - Đúng người → hiển thị đúng tên
- *   - Người lạ   → hiển thị UNKNOWN
+ * - Đúng người → hiển thị đúng tên
+ * - Người lạ → hiển thị UNKNOWN
  *
  * @author Viet Khanh
  */
@@ -44,48 +44,48 @@ public class RecognizePanel extends JPanel {
     // UI components
     // -----------------------------------------------------------
     private CameraPanel cameraPanel;
-    private JLabel      nameLabel;      // Tên người nhận diện (chữ to)
-    private JLabel      scoreLabel;     // % confidence
-    private JLabel      statusLabel;    // Trạng thái hoạt động
-    private JButton     btnStartStop;   // Bắt đầu / Dừng nhận diện
+    private JLabel nameLabel; // Tên người nhận diện (chữ to)
+    private JLabel scoreLabel; // % confidence
+    private JLabel statusLabel; // Trạng thái hoạt động
+    private JButton btnStartStop; // Bắt đầu / Dừng nhận diện
     private DefaultTableModel tableModel; // Bảng lịch sử nhận diện
 
     // -----------------------------------------------------------
     // Colors
     // -----------------------------------------------------------
-    private static final Color BG       = Color.WHITE;
+    private static final Color BG = Color.WHITE;
     private static final Color PANEL_BG = new Color(245, 245, 245);
-    private static final Color TEXT     = new Color(33, 37, 41);
-    private static final Color PRIMARY  = new Color(0, 123, 255);
-    private static final Color SUCCESS  = new Color(40, 167, 69);
-    private static final Color DANGER   = new Color(220, 53, 69);
-    private static final Color ORANGE   = new Color(255, 140, 0);
+    private static final Color TEXT = new Color(33, 37, 41);
+    private static final Color PRIMARY = new Color(0, 123, 255);
+    private static final Color SUCCESS = new Color(40, 167, 69);
+    private static final Color DANGER = new Color(220, 53, 69);
+    private static final Color ORANGE = new Color(255, 140, 0);
 
     // -----------------------------------------------------------
     // AI + DAO
     // -----------------------------------------------------------
-    private FaceDetector    faceDetector;
-    private FaceRecognizer  faceRecognizer;
+    private FaceDetector faceDetector;
+    private FaceRecognizer faceRecognizer;
     private DetectionLogDAO dao;
 
     // -----------------------------------------------------------
     // Recognition control
     // -----------------------------------------------------------
-    private Thread          recognitionThread;
+    private Thread recognitionThread;
     private volatile boolean running = false;
 
-    private static final double THRESHOLD       = 0.363;
-    private static final int    RECOGNIZE_MS    = 400;   // interval (ms)
-    private static final long   LOG_INTERVAL_MS = 5000;  // log cùng người: tối đa 1 lần / 5s
+    private static final double THRESHOLD = 0.363;
+    private static final int RECOGNIZE_MS = 400; // interval (ms)
+    private static final long LOG_INTERVAL_MS = 5000; // log cùng người: tối đa 1 lần / 5s
 
     private String lastLoggedName = "";
-    private long   lastLogTime    = 0;
+    private long lastLogTime = 0;
 
     // -----------------------------------------------------------
     // Model + gallery paths
     // -----------------------------------------------------------
     private static final String MODEL_DETECT = "models/face_detection_yunet_2023mar.onnx";
-    private static final String MODEL_RECOG  = "models/face_recognition_sface_2021dec.onnx";
+    private static final String MODEL_RECOG = "models/face_recognition_sface_2021dec.onnx";
     private static final String GALLERY_FILE = "gallery.dat";
 
     // -----------------------------------------------------------
@@ -130,9 +130,11 @@ public class RecognizePanel extends JPanel {
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Bảng lịch sử nhận diện
-        String[] cols = {"Thời gian", "Tên", "Score"};
+        String[] cols = { "Thời gian", "Tên", "Score" };
         tableModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable logTable = new JTable(tableModel);
         logTable.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -168,13 +170,16 @@ public class RecognizePanel extends JPanel {
         rightPanel.add(btnStartStop);
 
         add(cameraPanel, BorderLayout.CENTER);
-        add(rightPanel,  BorderLayout.EAST);
-
-        cameraPanel.startCamera();
+        add(rightPanel, BorderLayout.EAST);
 
         // Khởi tạo AI + DAO
         initAI();
         dao = new DetectionLogDAO();
+    }
+
+    /** Được gọi bởi MainFrame khi tab Nhận diện được chọn */
+    public void startCamera() {
+        cameraPanel.startCamera();
     }
 
     // -----------------------------------------------------------
@@ -182,12 +187,12 @@ public class RecognizePanel extends JPanel {
     // -----------------------------------------------------------
     private void initAI() {
         try {
-            faceDetector   = new FaceDetector(MODEL_DETECT);
+            faceDetector = new FaceDetector(MODEL_DETECT);
             faceRecognizer = new FaceRecognizer(MODEL_RECOG);
             System.out.println("[RecognizePanel] AI models đã sẵn sàng.");
         } catch (Exception e) {
             System.err.println("[RecognizePanel] Lỗi load AI: " + e.getMessage());
-            faceDetector   = null;
+            faceDetector = null;
             faceRecognizer = null;
         }
     }
@@ -247,11 +252,13 @@ public class RecognizePanel extends JPanel {
 
                 // Lấy frame hiện tại từ camera
                 BufferedImage img = cameraPanel.getCurrentImage();
-                if (img == null) continue;
+                if (img == null)
+                    continue;
 
                 // Convert → Mat
                 Mat frameMat = bufferedImageToMat(img);
-                if (frameMat == null) continue;
+                if (frameMat == null)
+                    continue;
 
                 // Detect face
                 Mat faces = faceDetector.detect(frameMat);
@@ -274,8 +281,8 @@ public class RecognizePanel extends JPanel {
                 // So khớp với gallery
                 String[] result = findBestMatch(embedding, gallery);
                 String recognizedName = result[0];
-                double score         = Double.parseDouble(result[1]);
-                String timeStr       = sdf.format(new Date());
+                double score = Double.parseDouble(result[1]);
+                String timeStr = sdf.format(new Date());
 
                 // Cập nhật UI
                 SwingUtilities.invokeLater(() -> {
@@ -295,14 +302,14 @@ public class RecognizePanel extends JPanel {
                     double logScore = score / 100.0; // Chuyển về 0.0–1.0
                     dao.insertLog(recognizedName, logScore);
                     lastLoggedName = recognizedName;
-                    lastLogTime    = now;
+                    lastLogTime = now;
 
                     // Thêm vào bảng lịch sử (giữ tối đa 10 dòng)
-                    final String n  = recognizedName;
+                    final String n = recognizedName;
                     final String sc = String.format("%.1f%%", score);
-                    final String t  = timeStr;
+                    final String t = timeStr;
                     SwingUtilities.invokeLater(() -> {
-                        tableModel.insertRow(0, new Object[]{t, n, sc});
+                        tableModel.insertRow(0, new Object[] { t, n, sc });
                         if (tableModel.getRowCount() > 10) {
                             tableModel.removeRow(tableModel.getRowCount() - 1);
                         }
@@ -322,7 +329,7 @@ public class RecognizePanel extends JPanel {
     // So khớp embedding với gallery → trả về {name, score%}
     // -----------------------------------------------------------
     private String[] findBestMatch(float[] query, List<GalleryEntry> gallery) {
-        String bestName  = "UNKNOWN";
+        String bestName = "UNKNOWN";
         double bestScore = -1.0;
 
         for (GalleryEntry entry : gallery) {
@@ -330,7 +337,7 @@ public class RecognizePanel extends JPanel {
             System.out.println("[Recognize] So sanh voi " + entry.getName() + ": " + String.format("%.4f", score));
             if (score > bestScore) {
                 bestScore = score;
-                bestName  = entry.getName();
+                bestName = entry.getName();
             }
         }
 
@@ -338,18 +345,19 @@ public class RecognizePanel extends JPanel {
             bestName = "UNKNOWN";
         }
 
-        return new String[]{bestName, String.format("%.1f", bestScore * 100)};
+        return new String[] { bestName, String.format("%.1f", bestScore * 100) };
     }
 
     private double cosineSimilarity(float[] a, float[] b) {
         double dot = 0, normA = 0, normB = 0;
         int len = Math.min(a.length, b.length);
         for (int i = 0; i < len; i++) {
-            dot   += a[i] * b[i];
+            dot += a[i] * b[i];
             normA += a[i] * a[i];
             normB += b[i] * b[i];
         }
-        if (normA == 0 || normB == 0) return 0;
+        if (normA == 0 || normB == 0)
+            return 0;
         return dot / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
