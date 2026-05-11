@@ -5,6 +5,7 @@ import com.facedetection.ai.FaceRecognizer;
 import com.facedetection.dao.DatabaseConnection;
 import com.facedetection.dao.DetectionLogDAO;
 import com.facedetection.model.GalleryEntry;
+import com.facedetection.model.GalleryRepository;
 
 import org.opencv.core.Mat;
 import org.opencv.core.CvType;
@@ -57,6 +58,7 @@ public class RegisterPanel extends JPanel {
     private FaceDetector   faceDetector;
     private FaceRecognizer faceRecognizer;
     private DetectionLogDAO dao;
+    private GalleryRepository galleryRepo;
 
     /** Kết quả detect của ảnh vừa chụp (dùng để extract embedding) */
     private Mat detectedFaces;
@@ -135,9 +137,10 @@ public class RegisterPanel extends JPanel {
 
         cameraPanel.startCamera();
 
-        // Khởi tạo AI + DAO
+        // Khởi tạo AI + DAO + Gallery
         initAI();
         dao = new DetectionLogDAO();
+        galleryRepo = new GalleryRepository();
     }
 
     // -------------------------------------------------------
@@ -229,13 +232,13 @@ public class RegisterPanel extends JPanel {
             }
         }
 
-        // --- Bước 2: Lưu vào gallery.dat ---
+        // --- Bước 2: Lưu vào gallery.dat qua GalleryRepository ---
         if (embedding != null) {
-            boolean savedGallery = saveToGallery(name, embedding);
-            if (savedGallery) {
+            try {
+                galleryRepo.add(name, embedding);
                 System.out.println("[RegisterPanel] Đã lưu gallery.dat cho: " + name);
-            } else {
-                System.err.println("[RegisterPanel] Lưu gallery.dat thất bại!");
+            } catch (Exception ex) {
+                System.err.println("[RegisterPanel] Lưu gallery.dat thất bại: " + ex.getMessage());
             }
         }
 
@@ -265,45 +268,7 @@ public class RegisterPanel extends JPanel {
         resetForm();
     }
 
-    // -------------------------------------------------------
-    // Lưu GalleryEntry vào gallery.dat (append)
-    // -------------------------------------------------------
-    /**
-     * Đọc list hiện có từ gallery.dat (nếu có),
-     * thêm entry mới rồi ghi lại toàn bộ.
-     */
-    @SuppressWarnings("unchecked")
-    private boolean saveToGallery(String name, float[] embedding) {
-        List<GalleryEntry> list = new ArrayList<GalleryEntry>();
-        File file = new File(GALLERY_FILE);
-
-        // Đọc dữ liệu cũ nếu file đã tồn tại
-        if (file.exists()) {
-            try {
-                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-                list = (List<GalleryEntry>) ois.readObject();
-                ois.close();
-            } catch (Exception e) {
-                System.err.println("[RegisterPanel] Không đọc được gallery.dat cũ: " + e.getMessage());
-                list = new ArrayList<GalleryEntry>();
-            }
-        }
-
-        // Thêm entry mới
-        list.add(new GalleryEntry(name, embedding));
-
-        // Ghi lại toàn bộ
-        try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-            oos.writeObject(list);
-            oos.close();
-            System.out.println("[RegisterPanel] gallery.dat: " + list.size() + " người.");
-            return true;
-        } catch (IOException e) {
-            System.err.println("[RegisterPanel] Lỗi ghi gallery.dat: " + e.getMessage());
-            return false;
-        }
-    }
+    // saveToGallery() đã được thay bằng galleryRepo.add() ở trên
 
     // -------------------------------------------------------
     // Nút Hủy
