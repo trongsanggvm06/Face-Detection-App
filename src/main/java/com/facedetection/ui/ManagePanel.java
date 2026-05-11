@@ -114,7 +114,7 @@ public class ManagePanel extends JPanel {
     // -----------------------------------------------------------
     // Load gallery.dat → hiển thị vào table
     // -----------------------------------------------------------
-    private void refreshTable() {
+    public void refreshTable() {
         tableModel.setRowCount(0);
         List<GalleryEntry> entries = loadGallery();
 
