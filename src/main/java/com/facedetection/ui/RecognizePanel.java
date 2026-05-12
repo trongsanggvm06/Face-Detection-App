@@ -272,10 +272,10 @@ public class RecognizePanel extends JPanel {
                 if (faces == null || faces.rows() == 0) {
                     // No face in frame
                     SwingUtilities.invokeLater(() -> {
-                        nameLabel.setText("No face");
+                        nameLabel.setText("Không có mặt");
                         nameLabel.setForeground(ORANGE);
-                        scoreLabel.setText("Confidence: --");
-                        statusLabel.setText("No face detected");
+                        scoreLabel.setText("Độ tin cậy: --");
+                        statusLabel.setText("Không phát hiện khuôn mặt");
                     });
                     continue;
                 }
@@ -294,8 +294,8 @@ public class RecognizePanel extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     nameLabel.setText(recognizedName);
                     nameLabel.setForeground(recognizedName.equals("UNKNOWN") ? DANGER : SUCCESS);
-                    scoreLabel.setText(String.format(Locale.US, "Confidence: %.1f%%", score));
-                    statusLabel.setText("Recognizing...");
+                    scoreLabel.setText(String.format(Locale.US, "Độ tin cậy: %.1f%%", score));
+                    statusLabel.setText("Đang nhận diện...");
                     statusLabel.setForeground(SUCCESS);
                 });
 
