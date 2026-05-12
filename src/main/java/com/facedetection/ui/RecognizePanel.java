@@ -226,6 +226,9 @@ public class RecognizePanel extends JPanel {
         statusLabel.setText("Đang nhận diện...");
         statusLabel.setForeground(SUCCESS);
 
+        // Bật vẽ bounding box trên camera feed
+        cameraPanel.setFaceDetector(faceDetector);
+
         recognitionThread = new Thread(() -> recognitionLoop(gallery));
         recognitionThread.setDaemon(true);
         recognitionThread.start();
@@ -233,6 +236,8 @@ public class RecognizePanel extends JPanel {
 
     private void stopRecognition() {
         running = false;
+        // Tắt bounding box
+        cameraPanel.setFaceDetector(null);
         btnStartStop.setText("▶  Bắt đầu nhận diện");
         btnStartStop.setBackground(SUCCESS);
         nameLabel.setText("---");
@@ -289,7 +294,7 @@ public class RecognizePanel extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     nameLabel.setText(recognizedName);
                     nameLabel.setForeground(recognizedName.equals("UNKNOWN") ? DANGER : SUCCESS);
-                    scoreLabel.setText(String.format(Locale.US, "Do tin cay: %.1f%%", score));
+                    scoreLabel.setText(String.format(Locale.US, "Độ tin cậy: %.1f%%", score));
                     statusLabel.setText("Đang nhận diện...");
                     statusLabel.setForeground(SUCCESS);
                 });
@@ -335,10 +340,9 @@ public class RecognizePanel extends JPanel {
 
         for (GalleryEntry entry : gallery) {
             double score = cosineSimilarity(query, entry.getEmbedding());
-            System.out.println("[Recognize] So sanh voi " + entry.getName() + ": " + String.format("%.4f", score));
             if (score > bestScore) {
                 bestScore = score;
-                bestName = entry.getName();
+                bestName  = entry.getName();
             }
         }
 

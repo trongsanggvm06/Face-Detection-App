@@ -18,8 +18,8 @@ public class EmbeddingSerializer {
     @SuppressWarnings("unchecked")
     public static List<GalleryEntry> load() {
         File file = new File(GALLERY_FILE);
-        if (file.exists()) {
-            System.out.println("Chua co file luu");
+        if (!file.exists()) {
+            System.out.println("Chua co file gallery.dat");
             return new ArrayList<>();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
