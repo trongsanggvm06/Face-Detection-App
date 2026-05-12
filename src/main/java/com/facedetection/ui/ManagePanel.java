@@ -204,7 +204,7 @@ public class ManagePanel extends JPanel {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (List<GalleryEntry>) ois.readObject();
         } catch (Exception e) {
-            System.err.println("[ManagePanel] Lỗi đọc gallery.dat: " + e.getMessage());
+            System.err.println("[ManagePanel] Error reading gallery.dat: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -215,9 +215,9 @@ public class ManagePanel extends JPanel {
     private void saveGallery(List<GalleryEntry> entries) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(GALLERY_FILE))) {
             oos.writeObject(entries);
-            System.out.println("[ManagePanel] Đã lưu gallery: " + entries.size() + " người.");
+            System.out.println("[ManagePanel] Gallery saved: " + entries.size() + " entries.");
         } catch (IOException e) {
-            System.err.println("[ManagePanel] Lỗi ghi gallery.dat: " + e.getMessage());
+            System.err.println("[ManagePanel] Error writing gallery.dat: " + e.getMessage());
             JOptionPane.showMessageDialog(this, "Lỗi lưu gallery: " + e.getMessage());
         }
     }

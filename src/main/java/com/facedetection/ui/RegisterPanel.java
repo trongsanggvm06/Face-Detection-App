@@ -153,9 +153,9 @@ public class RegisterPanel extends JPanel {
         try {
             faceDetector = new FaceDetector(MODEL_DETECT);
             faceRecognizer = new FaceRecognizer(MODEL_RECOG);
-            System.out.println("[RegisterPanel] Đã khởi tạo AI models.");
+            System.out.println("[RegisterPanel] AI models loaded.");
         } catch (Exception e) {
-            System.err.println("[RegisterPanel] Lỗi load model AI: " + e.getMessage());
+            System.err.println("[RegisterPanel] Error loading AI model: " + e.getMessage());
             faceDetector = null;
             faceRecognizer = null;
         }
@@ -229,9 +229,9 @@ public class RegisterPanel extends JPanel {
                 Mat feature = faceRecognizer.extractFeature(capturedMat, detectedFaces);
                 embedding = matToFloatArray(feature);
                 score = 1.0; // Đăng ký mới → confidence = 1.0
-                System.out.println("[RegisterPanel] Đã trích xuất embedding: " + embedding.length + " chiều");
+                System.out.println("[RegisterPanel] Embedding extracted: " + embedding.length + " dims");
             } catch (Exception e) {
-                System.err.println("[RegisterPanel] Lỗi extract embedding: " + e.getMessage());
+                System.err.println("[RegisterPanel] Error extracting embedding: " + e.getMessage());
             }
         }
 
@@ -239,18 +239,18 @@ public class RegisterPanel extends JPanel {
         if (embedding != null) {
             try {
                 galleryRepo.add(name, embedding);
-                System.out.println("[RegisterPanel] Đã lưu gallery.dat cho: " + name);
+                System.out.println("[RegisterPanel] Saved to gallery.dat for: " + name);
             } catch (Exception ex) {
-                System.err.println("[RegisterPanel] Lưu gallery.dat thất bại: " + ex.getMessage());
+                System.err.println("[RegisterPanel] Failed to save gallery.dat: " + ex.getMessage());
             }
         }
 
         // --- Bước 3: Ghi log vào DB ---
         boolean savedDB = dao.insertLog(name, score);
         if (savedDB) {
-            System.out.println("[RegisterPanel] Đã ghi log DB: " + name + " | score=" + score);
+            System.out.println("[RegisterPanel] DB log saved: " + name + " | score=" + score);
         } else {
-            System.err.println("[RegisterPanel] Ghi log DB thất bại!");
+            System.err.println("[RegisterPanel] Failed to save DB log!");
         }
 
         // --- Thông báo kết quả ---
@@ -307,7 +307,7 @@ public class RegisterPanel extends JPanel {
             mat.put(0, 0, pixels);
             return mat;
         } catch (Exception e) {
-            System.err.println("[RegisterPanel] Lỗi convert BufferedImage→Mat: " + e.getMessage());
+            System.err.println("[RegisterPanel] Error converting image to Mat: " + e.getMessage());
             return null;
         }
     }

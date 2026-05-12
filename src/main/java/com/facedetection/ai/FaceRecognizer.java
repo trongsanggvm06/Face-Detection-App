@@ -10,7 +10,7 @@ public class FaceRecognizer {
     
     public FaceRecognizer(String modelPath) {
         recognizer = FaceRecognizerSF.create(modelPath, "");
-        System.out.println("Da load FaceRecognizer: " + modelPath);
+        System.out.println("[AI] FaceRecognizer loaded: " + modelPath);
     }
 
     public Mat extractFeature(Mat frame, Mat faceBox) {
@@ -23,7 +23,7 @@ public class FaceRecognizer {
 
     public boolean match(Mat t1, Mat t2) {
         double score = recognizer.match(t1, t2, FaceRecognizerSF.FR_COSINE);
-        System.out.println("Diem giong nhau: " + score);
+        System.out.println("[AI] Similarity score: " + score);
         return score >= THRESHOLD;
     }
 }

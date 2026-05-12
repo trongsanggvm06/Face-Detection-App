@@ -190,9 +190,9 @@ public class RecognizePanel extends JPanel {
         try {
             faceDetector = new FaceDetector(MODEL_DETECT);
             faceRecognizer = new FaceRecognizer(MODEL_RECOG);
-            System.out.println("[RecognizePanel] AI models đã sẵn sàng.");
+            System.out.println("[RecognizePanel] AI models ready.");
         } catch (Exception e) {
-            System.err.println("[RecognizePanel] Lỗi load AI: " + e.getMessage());
+            System.err.println("[RecognizePanel] Error loading AI: " + e.getMessage());
             faceDetector = null;
             faceRecognizer = null;
         }
@@ -295,7 +295,7 @@ public class RecognizePanel extends JPanel {
                     nameLabel.setText(recognizedName);
                     nameLabel.setForeground(recognizedName.equals("UNKNOWN") ? DANGER : SUCCESS);
                     scoreLabel.setText(String.format(Locale.US, "Độ tin cậy: %.1f%%", score));
-                    statusLabel.setText("Đang nhận diện...");
+                    statusLabel.setText("No face detected");
                     statusLabel.setForeground(SUCCESS);
                 });
 
@@ -373,15 +373,15 @@ public class RecognizePanel extends JPanel {
     private List<GalleryEntry> loadGallery() {
         File file = new File(GALLERY_FILE);
         if (!file.exists()) {
-            System.out.println("[RecognizePanel] Chưa có gallery.dat");
+            System.out.println("[RecognizePanel] gallery.dat not found.");
             return new ArrayList<>();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             List<GalleryEntry> entries = (List<GalleryEntry>) ois.readObject();
-            System.out.println("[RecognizePanel] Đã load " + entries.size() + " người từ gallery.dat");
+            System.out.println("[RecognizePanel] Loaded " + entries.size() + " person(s) from gallery.dat");
             return entries;
         } catch (Exception e) {
-            System.err.println("[RecognizePanel] Lỗi đọc gallery.dat: " + e.getMessage());
+            System.err.println("[RecognizePanel] Error reading gallery.dat: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -401,7 +401,7 @@ public class RecognizePanel extends JPanel {
             mat.put(0, 0, pixels);
             return mat;
         } catch (Exception e) {
-            System.err.println("[RecognizePanel] Lỗi convert image: " + e.getMessage());
+            System.err.println("[RecognizePanel] Error converting image: " + e.getMessage());
             return null;
         }
     }

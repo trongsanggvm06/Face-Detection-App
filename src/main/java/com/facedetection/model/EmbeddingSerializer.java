@@ -3,15 +3,20 @@ package com.facedetection.model;
 import java.io.*;
 import java.util.*;
 
+/**
+ * EmbeddingSerializer.java – Task 5 (Trong An)
+ * Serialize / deserialize List<GalleryEntry> to/from gallery.dat
+ * @author Trong An
+ */
 public class EmbeddingSerializer {
     private static final String GALLERY_FILE = "gallery.dat";
 
     public static void save(List<GalleryEntry> entries) {
-        try (ObjectOutputStream oos = new ObjectOutputStream( new FileOutputStream(GALLERY_FILE))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(GALLERY_FILE))) {
             oos.writeObject(entries);
-            System.out.println("Da luu" + entries.size() + "nguoi vao gallery.dat");
+            System.out.println("[Gallery] Saved " + entries.size() + " entries to gallery.dat");
         } catch (IOException e) {
-            System.err.println( "Loi ghi file" + e.getMessage());
+            System.err.println("[Gallery] Error writing gallery.dat: " + e.getMessage());
         }
     }
 
@@ -19,15 +24,15 @@ public class EmbeddingSerializer {
     public static List<GalleryEntry> load() {
         File file = new File(GALLERY_FILE);
         if (!file.exists()) {
-            System.out.println("Chua co file gallery.dat");
+            System.out.println("[Gallery] gallery.dat not found - starting empty.");
             return new ArrayList<>();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             List<GalleryEntry> entries = (List<GalleryEntry>) ois.readObject();
-            System.out.println("Da doc " + entries.size() + " nguoi tu gallery.dat");
+            System.out.println("[Gallery] Loaded " + entries.size() + " entries from gallery.dat");
             return entries;
         } catch (Exception e) {
-            System.err.println("Loi doc file " +e.getMessage());
+            System.err.println("[Gallery] Error reading gallery.dat: " + e.getMessage());
             return new ArrayList<>();
         }
     }

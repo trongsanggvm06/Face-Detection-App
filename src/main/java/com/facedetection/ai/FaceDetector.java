@@ -18,7 +18,7 @@ public class FaceDetector {
             INPUT_SIZE
         );
 
-        System.out.println("Da load FaceDetector: " + modelPath);
+        System.out.println("[AI] FaceDetector loaded: " + modelPath);
 
     }
 
