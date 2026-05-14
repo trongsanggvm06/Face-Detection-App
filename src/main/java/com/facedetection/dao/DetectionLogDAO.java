@@ -8,20 +8,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DetectionLogDAO.java – Task 7 (Khanh)
- * INSERT / SELECT detection logs from detection_log table.
- * @author Viet Khanh
- */
 public class DetectionLogDAO {
 
     private Connection getConn() throws SQLException {
         return DatabaseConnection.getInstance().getConnection();
     }
 
-    // ===================================================================
-    // INSERT
-    // ===================================================================
     public boolean insertLog(String personName, Timestamp timestamp, double score) {
         String sql = "INSERT INTO detection_log (person_name, timestamp, score) "
                    + "VALUES (?, ?, ?)";
@@ -41,15 +33,11 @@ public class DetectionLogDAO {
         }
     }
 
-    /** Overload - uses current time as timestamp */
     public boolean insertLog(String personName, double score) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         return insertLog(personName, now, score);
     }
 
-    // ===================================================================
-    // SELECT ALL
-    // ===================================================================
     public List<Object[]> getAllLogs() {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT id, person_name, timestamp, score "
@@ -75,9 +63,6 @@ public class DetectionLogDAO {
         return list;
     }
 
-    // ===================================================================
-    // SELECT BY PERSON
-    // ===================================================================
     public List<Object[]> getLogsByPerson(String personName) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT id, person_name, timestamp, score "
@@ -104,9 +89,6 @@ public class DetectionLogDAO {
         return list;
     }
 
-    // ===================================================================
-    // main() – quick test
-    // ===================================================================
     public static void main(String[] args) {
         System.out.println("=== DetectionLogDAO Test ===");
         DetectionLogDAO dao = new DetectionLogDAO();

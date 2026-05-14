@@ -11,30 +11,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ManagePanel.java – Nhiệm vụ 15 (Khánh – Chính, Ext)
- *
- * UI quản lý gallery.dat:
- *   1. Xem danh sách tất cả người đã đăng ký
- *   2. Xóa một người được chọn
- *   3. Xóa toàn bộ gallery
- *   4. Làm mới danh sách
- *
- * @author Viet Khanh
- */
 public class ManagePanel extends JPanel {
 
-    // -----------------------------------------------------------
-    // UI
-    // -----------------------------------------------------------
     private DefaultTableModel tableModel;
     private JTable            table;
     private JLabel            statusLabel;
     private JButton           btnRefresh, btnDelete, btnClearAll;
 
-    // -----------------------------------------------------------
-    // Colors
-    // -----------------------------------------------------------
     private static final Color BG      = Color.WHITE;
     private static final Color PANEL_BG = new Color(245, 245, 245);
     private static final Color TEXT    = new Color(33, 37, 41);
@@ -60,8 +43,8 @@ public class ManagePanel extends JPanel {
         header.setBorder(new EmptyBorder(0, 0, 10, 0));
         add(header, BorderLayout.NORTH);
 
-        // ---- Table ----
-        String[] cols = {"STT", "Tên người dùng", "Số chiều embedding"};
+
+        String[] cols = {"STT", "Tên người dùng", "Trạng thái"};
         tableModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -77,23 +60,21 @@ public class ManagePanel extends JPanel {
         scrollPane.setBorder(new TitledBorder("Danh sách người đã đăng ký"));
         add(scrollPane, BorderLayout.CENTER);
 
-        // ---- Bottom panel ----
+
         JPanel bottomPanel = new JPanel(new BorderLayout(10, 5));
         bottomPanel.setBackground(BG);
 
-        // Status
         statusLabel = new JLabel("Nhấn 'Làm mới' để tải danh sách.");
         statusLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         statusLabel.setForeground(ORANGE);
         bottomPanel.add(statusLabel, BorderLayout.NORTH);
 
-        // Buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         btnPanel.setBackground(BG);
 
-        btnRefresh  = makeButton("🔄  Làm mới",  PRIMARY);
-        btnDelete   = makeButton("🗑  Xóa mục chọn", DANGER);
-        btnClearAll = makeButton("✖  Xóa tất cả", new Color(150, 0, 0));
+        btnRefresh  = makeButton(" Làm mới",  PRIMARY);
+        btnDelete   = makeButton("  Xoá mục chọn", DANGER);
+        btnClearAll = makeButton("  Xoá tất cả", new Color(150, 0, 0));
 
         btnPanel.add(btnRefresh);
         btnPanel.add(btnDelete);
@@ -102,18 +83,15 @@ public class ManagePanel extends JPanel {
 
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // ---- Events ----
         btnRefresh.addActionListener(e  -> refreshTable());
         btnDelete.addActionListener(e   -> deleteSelected());
         btnClearAll.addActionListener(e -> clearAll());
 
-        // Load ngay khi mở
         refreshTable();
     }
 
     // -----------------------------------------------------------
     // Load gallery.dat → hiển thị vào table
-    // -----------------------------------------------------------
     public void refreshTable() {
         tableModel.setRowCount(0);
         List<GalleryEntry> entries = loadGallery();
@@ -129,30 +107,26 @@ public class ManagePanel extends JPanel {
             tableModel.addRow(new Object[]{
                 i + 1,
                 e.getName(),
-                e.getEmbedding() != null ? e.getEmbedding().length : 0
+                e.getEmbedding() != null ? "Đã đăng ký" : "Lỗi"
             });
         }
         statusLabel.setText("Tổng: " + entries.size() + " người đã đăng ký.");
         statusLabel.setForeground(SUCCESS);
     }
 
-    // -----------------------------------------------------------
-    // Xóa mục đang chọn trong table
-    // -----------------------------------------------------------
     private void deleteSelected() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một người để xóa!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một người để xoá!");
             return;
         }
 
         String name = (String) tableModel.getValueAt(selectedRow, 1);
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Xóa khuôn mặt của: " + name + "?",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                "Xoá khuôn mặt của: " + name + "?",
+                "Xác nhận xoá", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        // Load gallery, xóa entry có tên khớp (lần đầu tiên tìm thấy)
         List<GalleryEntry> entries = loadGallery();
         boolean removed = false;
         for (int i = 0; i < entries.size(); i++) {
@@ -165,18 +139,15 @@ public class ManagePanel extends JPanel {
 
         if (removed) {
             saveGallery(entries);
-            statusLabel.setText("Đã xóa: " + name);
+            statusLabel.setText("Đã xoá: " + name);
             statusLabel.setForeground(SUCCESS);
             refreshTable();
         } else {
-            statusLabel.setText("Không tìm thấy để xóa.");
+            statusLabel.setText("Không tìm thấy để xoá.");
             statusLabel.setForeground(DANGER);
         }
     }
 
-    // -----------------------------------------------------------
-    // Xóa toàn bộ gallery
-    // -----------------------------------------------------------
     private void clearAll() {
         if (tableModel.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this, "Gallery đã trống rồi!");
@@ -184,19 +155,16 @@ public class ManagePanel extends JPanel {
         }
 
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Xóa TOÀN BỘ " + tableModel.getRowCount() + " người trong gallery?\nHành động này không thể hoàn tác!",
-                "Xác nhận xóa tất cả", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                "Xoá TOÀN BỘ " + tableModel.getRowCount() + " người trong gallery?",
+                "Xác nhận xoá tất cả", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         saveGallery(new ArrayList<>());
-        statusLabel.setText("Đã xóa toàn bộ gallery.");
+        statusLabel.setText("Đã xoá toàn bộ gallery.");
         statusLabel.setForeground(DANGER);
         refreshTable();
     }
 
-    // -----------------------------------------------------------
-    // Load gallery.dat
-    // -----------------------------------------------------------
     @SuppressWarnings("unchecked")
     private List<GalleryEntry> loadGallery() {
         File file = new File(GALLERY_FILE);
@@ -209,9 +177,6 @@ public class ManagePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // Lưu lại gallery.dat
-    // -----------------------------------------------------------
     private void saveGallery(List<GalleryEntry> entries) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(GALLERY_FILE))) {
             oos.writeObject(entries);
@@ -222,9 +187,6 @@ public class ManagePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // Util: tạo button
-    // -----------------------------------------------------------
     private JButton makeButton(String text, Color bg) {
         JButton btn = new JButton(text);
         btn.setBackground(bg);

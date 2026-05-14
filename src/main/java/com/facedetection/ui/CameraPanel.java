@@ -9,16 +9,6 @@ import org.opencv.core.*;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
-/**
- * CameraPanel.java – Nhiệm vụ 12 (Đức Tài – Chính)
- *
- * Hiển thị ảnh webcam realtime bằng OpenCV.
- * Hỗ trợ vẽ bounding box khi FaceDetector được gắn vào (Task 8/10).
- *
- * Cách dùng:
- *   cameraPanel.setFaceDetector(detector);   // bật vẽ box
- *   cameraPanel.setFaceDetector(null);        // tắt vẽ box
- */
 public class CameraPanel extends JPanel {
 
     VideoCapture camera;
@@ -26,16 +16,12 @@ public class CameraPanel extends JPanel {
     BufferedImage image;
     boolean      running = false;
 
-    /** FaceDetector để vẽ bounding box, null = không vẽ */
     private volatile FaceDetector faceDetector = null;
 
     public CameraPanel() {
         setBackground(Color.BLACK);
     }
 
-    // -----------------------------------------------------------
-    // Set FaceDetector để bật/tắt bounding box overlay
-    // -----------------------------------------------------------
     public void setFaceDetector(FaceDetector detector) {
         this.faceDetector = detector;
     }
@@ -55,7 +41,6 @@ public class CameraPanel extends JPanel {
             while (running) {
                 if (camera.read(frame)) {
 
-                    // Vẽ bounding box nếu FaceDetector đã được gắn
                     FaceDetector detector = faceDetector;
                     if (detector != null && !frame.empty()) {
                         try {
@@ -96,7 +81,6 @@ public class CameraPanel extends JPanel {
         return image;
     }
 
-    /** Trả về Mat frame hiện tại (dùng cho recognition pipeline) */
     public Mat getCurrentFrame() {
         return frame;
     }

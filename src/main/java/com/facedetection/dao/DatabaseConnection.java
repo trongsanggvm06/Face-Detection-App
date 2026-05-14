@@ -5,11 +5,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * DatabaseConnection.java – Task 6 (Khanh)
- * Singleton JDBC connection to MySQL. Auto-creates detection_log table.
- * @author Viet Khanh
- */
 public class DatabaseConnection {
 
     private static final String DB_HOST     = "localhost";

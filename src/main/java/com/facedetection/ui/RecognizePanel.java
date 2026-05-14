@@ -24,36 +24,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * RecognizePanel.java – Nhiệm vụ 14 (Khanh – Chính)
- *
- * UI nhận diện khuôn mặt realtime:
- * 1. Hiển thị live webcam qua CameraPanel
- * 2. Mỗi 400ms: detect face → extract embedding → so khớp gallery
- * 3. Hiển thị tên + % confidence trên giao diện
- * 4. Ghi log vào DB (DetectionLogDAO) sau mỗi lần nhận diện thành công
- *
- * Pass condition:
- * - Đúng người → hiển thị đúng tên
- * - Người lạ → hiển thị UNKNOWN
- *
- * @author Viet Khanh
- */
 public class RecognizePanel extends JPanel {
 
-    // -----------------------------------------------------------
-    // UI components
-    // -----------------------------------------------------------
     private CameraPanel cameraPanel;
-    private JLabel nameLabel; // Tên người nhận diện (chữ to)
-    private JLabel scoreLabel; // % confidence
-    private JLabel statusLabel; // Trạng thái hoạt động
-    private JButton btnStartStop; // Bắt đầu / Dừng nhận diện
-    private DefaultTableModel tableModel; // Bảng lịch sử nhận diện
+    private JLabel nameLabel;
+    private JLabel scoreLabel;
+    private JLabel statusLabel;
+    private JButton btnStartStop;
+    private DefaultTableModel tableModel;
 
-    // -----------------------------------------------------------
-    // Colors
-    // -----------------------------------------------------------
     private static final Color BG = Color.WHITE;
     private static final Color PANEL_BG = new Color(245, 245, 245);
     private static final Color TEXT = new Color(33, 37, 41);
@@ -76,22 +55,18 @@ public class RecognizePanel extends JPanel {
     private volatile boolean running = false;
 
     private static final double THRESHOLD = 0.363;
-    private static final int RECOGNIZE_MS = 400; // interval (ms)
-    private static final long LOG_INTERVAL_MS = 5000; // log cùng người: tối đa 1 lần / 5s
+    private static final int RECOGNIZE_MS = 400;
+    private static final long LOG_INTERVAL_MS = 5000;
+    private static final int NO_FACE_TOLERANCE = 5;
 
     private String lastLoggedName = "";
     private long lastLogTime = 0;
+    private int noFaceCount = 0;
 
-    // -----------------------------------------------------------
-    // Model + gallery paths
-    // -----------------------------------------------------------
     private static final String MODEL_DETECT = "models/face_detection_yunet_2023mar.onnx";
     private static final String MODEL_RECOG = "models/face_recognition_sface_2021dec.onnx";
     private static final String GALLERY_FILE = "gallery.dat";
 
-    // -----------------------------------------------------------
-    // Constructor
-    // -----------------------------------------------------------
     public RecognizePanel() {
         setLayout(new BorderLayout(15, 15));
         setBackground(BG);
@@ -99,26 +74,22 @@ public class RecognizePanel extends JPanel {
 
         cameraPanel = new CameraPanel();
 
-        // ---- Right panel ----
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setPreferredSize(new Dimension(300, 0));
         rightPanel.setBackground(PANEL_BG);
         rightPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Tiêu đề
         JLabel title = new JLabel("KẾT QUẢ NHẬN DIỆN");
         title.setFont(new Font("Arial", Font.BOLD, 14));
         title.setForeground(PRIMARY);
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Tên người (hiển thị to)
         nameLabel = new JLabel("---");
         nameLabel.setFont(new Font("Arial", Font.BOLD, 26));
         nameLabel.setForeground(TEXT);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Confidence score
         scoreLabel = new JLabel("Độ tin cậy: --");
         scoreLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         scoreLabel.setForeground(TEXT);
@@ -147,8 +118,7 @@ public class RecognizePanel extends JPanel {
         scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
         scrollPane.setBorder(new TitledBorder("Lịch sử nhận diện (10 gần nhất)"));
 
-        // Nút Start/Stop
-        btnStartStop = new JButton("▶  Bắt đầu nhận diện");
+        btnStartStop = new JButton("  Bắt đầu nhận diện");
         btnStartStop.setBackground(SUCCESS);
         btnStartStop.setForeground(Color.WHITE);
         btnStartStop.setFocusPainted(false);
@@ -157,14 +127,11 @@ public class RecognizePanel extends JPanel {
         btnStartStop.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnStartStop.addActionListener(e -> toggleRecognition());
 
-        // Assemble right panel
         rightPanel.add(title);
         rightPanel.add(Box.createVerticalStrut(10));
         rightPanel.add(nameLabel);
         rightPanel.add(Box.createVerticalStrut(4));
         rightPanel.add(scoreLabel);
-        rightPanel.add(Box.createVerticalStrut(6));
-        rightPanel.add(statusLabel);
         rightPanel.add(Box.createVerticalStrut(15));
         rightPanel.add(scrollPane);
         rightPanel.add(Box.createVerticalStrut(15));
@@ -173,19 +140,14 @@ public class RecognizePanel extends JPanel {
         add(cameraPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
 
-        // Khởi tạo AI + DAO
         initAI();
         dao = new DetectionLogDAO();
     }
 
-    /** Được gọi bởi MainFrame khi tab Nhận diện được chọn */
     public void startCamera() {
         cameraPanel.startCamera();
     }
 
-    // -----------------------------------------------------------
-    // Khởi tạo AI models
-    // -----------------------------------------------------------
     private void initAI() {
         try {
             faceDetector = new FaceDetector(MODEL_DETECT);
@@ -198,9 +160,6 @@ public class RecognizePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // Toggle Start / Stop
-    // -----------------------------------------------------------
     private void toggleRecognition() {
         if (running) {
             stopRecognition();
@@ -221,12 +180,8 @@ public class RecognizePanel extends JPanel {
         }
 
         running = true;
-        btnStartStop.setText("⏹  Dừng nhận diện");
+        btnStartStop.setText("  Dừng nhận diện");
         btnStartStop.setBackground(DANGER);
-        statusLabel.setText("Đang nhận diện...");
-        statusLabel.setForeground(SUCCESS);
-
-        // Bật vẽ bounding box trên camera feed
         cameraPanel.setFaceDetector(faceDetector);
 
         recognitionThread = new Thread(() -> recognitionLoop(gallery));
@@ -238,7 +193,7 @@ public class RecognizePanel extends JPanel {
         running = false;
         // Tắt bounding box
         cameraPanel.setFaceDetector(null);
-        btnStartStop.setText("▶  Bắt đầu nhận diện");
+        btnStartStop.setText(" Bắt đầu nhận diện");
         btnStartStop.setBackground(SUCCESS);
         nameLabel.setText("---");
         scoreLabel.setText("Độ tin cậy: --");
@@ -247,8 +202,6 @@ public class RecognizePanel extends JPanel {
     }
 
     // -----------------------------------------------------------
-    // Vòng lặp nhận diện (chạy trên background thread)
-    // -----------------------------------------------------------
     private void recognitionLoop(List<GalleryEntry> gallery) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
@@ -256,61 +209,54 @@ public class RecognizePanel extends JPanel {
             try {
                 Thread.sleep(RECOGNIZE_MS);
 
-                // Lấy frame hiện tại từ camera
                 BufferedImage img = cameraPanel.getCurrentImage();
                 if (img == null)
                     continue;
 
-                // Convert → Mat
                 Mat frameMat = bufferedImageToMat(img);
                 if (frameMat == null)
                     continue;
 
-                // Detect face
                 Mat faces = faceDetector.detect(frameMat);
 
                 if (faces == null || faces.rows() == 0) {
-                    // No face in frame
-                    SwingUtilities.invokeLater(() -> {
-                        nameLabel.setText("Không có mặt");
-                        nameLabel.setForeground(ORANGE);
-                        scoreLabel.setText("Độ tin cậy: --");
-                        statusLabel.setText("Không phát hiện khuôn mặt");
-                    });
+                    noFaceCount++;
+                    if (noFaceCount >= NO_FACE_TOLERANCE) {
+                        SwingUtilities.invokeLater(() -> {
+                            nameLabel.setText("Không có mặt");
+                            nameLabel.setForeground(ORANGE);
+                            scoreLabel.setText("Độ tin cậy: --");
+                            statusLabel.setText("Không phát hiện khuôn mặt");
+                        });
+                    }
                     continue;
                 }
+                noFaceCount = 0;
 
-                // Extract embedding khuôn mặt đầu tiên
                 Mat feature = faceRecognizer.extractFeature(frameMat, faces);
                 float[] embedding = matToFloatArray(feature);
 
-                // So khớp với gallery
                 String[] result = findBestMatch(embedding, gallery);
                 String recognizedName = result[0];
                 double score = Double.parseDouble(result[1]);
                 String timeStr = sdf.format(new Date());
 
-                // Cập nhật UI
                 SwingUtilities.invokeLater(() -> {
                     nameLabel.setText(recognizedName);
                     nameLabel.setForeground(recognizedName.equals("UNKNOWN") ? DANGER : SUCCESS);
                     scoreLabel.setText(String.format(Locale.US, "Độ tin cậy: %.1f%%", score));
-                    statusLabel.setText("Đang nhận diện...");
-                    statusLabel.setForeground(SUCCESS);
                 });
 
-                // Log vào DB (throttle: cùng người thì log tối đa 1 lần / 5s)
                 long now = System.currentTimeMillis();
                 boolean nameChanged = !recognizedName.equals(lastLoggedName);
                 boolean timeElapsed = (now - lastLogTime) >= LOG_INTERVAL_MS;
 
                 if (nameChanged || timeElapsed) {
-                    double logScore = score / 100.0; // Chuyển về 0.0–1.0
+                    double logScore = score / 100.0;
                     dao.insertLog(recognizedName, logScore);
                     lastLoggedName = recognizedName;
                     lastLogTime = now;
 
-                    // Thêm vào bảng lịch sử (giữ tối đa 10 dòng)
                     final String n = recognizedName;
                     final String sc = String.format(Locale.US, "%.1f%%", score);
                     final String t = timeStr;
@@ -366,9 +312,6 @@ public class RecognizePanel extends JPanel {
         return dot / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
-    // -----------------------------------------------------------
-    // Load gallery.dat (workaround cho bug EmbeddingSerializer)
-    // -----------------------------------------------------------
     @SuppressWarnings("unchecked")
     private List<GalleryEntry> loadGallery() {
         File file = new File(GALLERY_FILE);
@@ -386,9 +329,6 @@ public class RecognizePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // Util: BufferedImage → Mat (BGR)
-    // -----------------------------------------------------------
     private Mat bufferedImageToMat(BufferedImage bi) {
         try {
             BufferedImage converted = new BufferedImage(
@@ -406,9 +346,6 @@ public class RecognizePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // Util: Mat embedding → float[]
-    // -----------------------------------------------------------
     private float[] matToFloatArray(Mat mat) {
         int size = (int) mat.total();
         float[] result = new float[size];
@@ -416,9 +353,6 @@ public class RecognizePanel extends JPanel {
         return result;
     }
 
-    // -----------------------------------------------------------
-    // Dừng camera khi đóng panel
-    // -----------------------------------------------------------
     public void stopCamera() {
         stopRecognition();
         cameraPanel.stopCamera();

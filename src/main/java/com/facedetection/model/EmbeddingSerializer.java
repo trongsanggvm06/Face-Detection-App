@@ -3,11 +3,6 @@ package com.facedetection.model;
 import java.io.*;
 import java.util.*;
 
-/**
- * EmbeddingSerializer.java – Task 5 (Trong An)
- * Serialize / deserialize List<GalleryEntry> to/from gallery.dat
- * @author Trong An
- */
 public class EmbeddingSerializer {
     private static final String GALLERY_FILE = "gallery.dat";
 

@@ -2,22 +2,11 @@ package com.facedetection.model;
 
 import java.io.Serializable;
 
-/**
- * GalleryEntry.java
- *
- * Model lưu thông tin một khuôn mặt đã đăng ký.
- * Implement Serializable để lưu vào file gallery.dat bằng ObjectOutputStream.
- *
- * @author Viết Khanh
- */
 public class GalleryEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** Tên người được đăng ký */
     private String name;
-
-    /** Vector embedding 128 chiều trích xuất bởi SFace */
     private float[] embedding;
 
     public GalleryEntry(String name, float[] embedding) {

@@ -3,11 +3,6 @@ package com.facedetection.model;
 import com.facedetection.ai.FaceRecognizer;
 import java.util.*;
 
-/**
- * GalleryRepository.java – Task 4 (Trong An)
- * In-memory gallery loaded from gallery.dat. Supports add, findMatch, clear.
- * @author Trong An
- */
 public class GalleryRepository {
     private List<GalleryEntry> entries;
 
@@ -17,6 +12,7 @@ public class GalleryRepository {
     }
 
     public void add(String name, float[] embedding) {
+        entries = EmbeddingSerializer.load();
         GalleryEntry entry = new GalleryEntry(name, embedding);
         entries.add(entry);
         EmbeddingSerializer.save(entries);

@@ -19,26 +19,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * RegisterPanel.java – Nhiệm vụ 13 (Khanh – Chính)
- *
- * UI đăng ký khuôn mặt:
- * 1. Nhập tên người dùng
- * 2. Chụp ảnh từ webcam
- * 3. Detect khuôn mặt + trích xuất embedding (SFace)
- * 4. Lưu GalleryEntry vào gallery.dat (ObjectOutputStream)
- * 5. Ghi log vào DB (DetectionLogDAO)
- *
- * Pass condition: file gallery.dat tồn tại sau khi đăng ký,
- * restart app vẫn nhận được người đó.
- *
- * @author Viết Khánh
- */
 public class RegisterPanel extends JPanel {
 
-    // -------------------------------------------------------
-    // UI components (giữ nguyên từ Tài)
-    // -------------------------------------------------------
     JTextField txtName;
     JLabel previewLabel, statusLabel;
     JButton btnCapture, btnSave, btnCancel;
@@ -52,27 +34,17 @@ public class RegisterPanel extends JPanel {
     Color success = new Color(40, 167, 69);
     Color danger = new Color(220, 53, 69);
 
-    // -------------------------------------------------------
-    // AI & DAO (Khánh thêm)
-    // -------------------------------------------------------
     private FaceDetector faceDetector;
     private FaceRecognizer faceRecognizer;
     private DetectionLogDAO dao;
     private GalleryRepository galleryRepo;
 
-    /** Kết quả detect của ảnh vừa chụp (dùng để extract embedding) */
     private Mat detectedFaces;
-    /** Frame Mat tương ứng với capturedImage */
     private Mat capturedMat;
 
-    /** Đường dẫn các model và file gallery */
     private static final String MODEL_DETECT = "models/face_detection_yunet_2023mar.onnx";
     private static final String MODEL_RECOG = "models/face_recognition_sface_2021dec.onnx";
     private static final String GALLERY_FILE = "gallery.dat";
-
-    // -------------------------------------------------------
-    // Constructor
-    // -------------------------------------------------------
     public RegisterPanel() {
         setLayout(new BorderLayout(15, 15));
         setBackground(bg);
@@ -94,7 +66,7 @@ public class RegisterPanel extends JPanel {
         txtName.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
         txtName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        previewLabel = new JLabel("PREVIEW", SwingConstants.CENTER);
+        previewLabel = new JLabel("Xem trước ở đây nè", SwingConstants.CENTER);
         previewLabel.setOpaque(true);
         previewLabel.setBackground(Color.WHITE);
         previewLabel.setForeground(text);
@@ -110,7 +82,7 @@ public class RegisterPanel extends JPanel {
         setButtonStyle(btnSave, success);
         setButtonStyle(btnCancel, danger);
 
-        statusLabel = new JLabel("Sẵn sàng");
+        statusLabel = new JLabel("");
         statusLabel.setForeground(text);
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -135,20 +107,15 @@ public class RegisterPanel extends JPanel {
         btnSave.addActionListener(e -> saveImage());
         btnCancel.addActionListener(e -> resetForm());
 
-        // Khởi tạo AI + DAO + Gallery
         initAI();
         dao = new DetectionLogDAO();
         galleryRepo = new GalleryRepository();
     }
 
-    /** Được gọi bởi MainFrame khi tab Đăng ký được chọn */
     public void startCamera() {
         cameraPanel.startCamera();
     }
 
-    // -------------------------------------------------------
-    // Khởi tạo FaceDetector + FaceRecognizer
-    // -------------------------------------------------------
     private void initAI() {
         try {
             faceDetector = new FaceDetector(MODEL_DETECT);
@@ -161,9 +128,6 @@ public class RegisterPanel extends JPanel {
         }
     }
 
-    // -------------------------------------------------------
-    // Nút Chụp
-    // -------------------------------------------------------
     private void captureImage() {
         capturedImage = cameraPanel.getCurrentImage();
 
@@ -172,12 +136,10 @@ public class RegisterPanel extends JPanel {
             return;
         }
 
-        // Hiển thị preview
         Image img = capturedImage.getScaledInstance(270, 250, Image.SCALE_SMOOTH);
         previewLabel.setText("");
         previewLabel.setIcon(new ImageIcon(img));
 
-        // Convert BufferedImage → Mat để detect
         capturedMat = bufferedImageToMat(capturedImage);
         detectedFaces = null;
 
@@ -198,11 +160,7 @@ public class RegisterPanel extends JPanel {
         }
     }
 
-    // -------------------------------------------------------
-    // Nút Lưu – Logic chính (Khánh)
-    // -------------------------------------------------------
     private void saveImage() {
-        // --- Validate ---
         String name = txtName.getText().trim();
         if (name.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập tên!");
@@ -220,7 +178,6 @@ public class RegisterPanel extends JPanel {
         statusLabel.setText("Đang xử lý...");
         statusLabel.setForeground(primary);
 
-        // --- Bước 1: Extract embedding ---
         float[] embedding = null;
         double score = 0.0;
 
@@ -228,14 +185,13 @@ public class RegisterPanel extends JPanel {
             try {
                 Mat feature = faceRecognizer.extractFeature(capturedMat, detectedFaces);
                 embedding = matToFloatArray(feature);
-                score = 1.0; // Đăng ký mới → confidence = 1.0
+                score = 1.0;
                 System.out.println("[RegisterPanel] Embedding extracted: " + embedding.length + " dims");
             } catch (Exception e) {
                 System.err.println("[RegisterPanel] Error extracting embedding: " + e.getMessage());
             }
         }
 
-        // --- Bước 2: Lưu vào gallery.dat qua GalleryRepository ---
         if (embedding != null) {
             try {
                 galleryRepo.add(name, embedding);
@@ -245,7 +201,6 @@ public class RegisterPanel extends JPanel {
             }
         }
 
-        // --- Bước 3: Ghi log vào DB ---
         boolean savedDB = dao.insertLog(name, score);
         if (savedDB) {
             System.out.println("[RegisterPanel] DB log saved: " + name + " | score=" + score);
@@ -253,7 +208,6 @@ public class RegisterPanel extends JPanel {
             System.err.println("[RegisterPanel] Failed to save DB log!");
         }
 
-        // --- Thông báo kết quả ---
         String msg;
         if (embedding != null && savedDB) {
             msg = "✓ Đã đăng ký khuôn mặt thành công!\n"
@@ -271,11 +225,6 @@ public class RegisterPanel extends JPanel {
         resetForm();
     }
 
-    // saveToGallery() đã được thay bằng galleryRepo.add() ở trên
-
-    // -------------------------------------------------------
-    // Nút Hủy
-    // -------------------------------------------------------
     private void resetForm() {
         txtName.setText("");
         previewLabel.setIcon(null);
@@ -287,15 +236,8 @@ public class RegisterPanel extends JPanel {
         detectedFaces = null;
     }
 
-    // -------------------------------------------------------
-    // Util: BufferedImage → Mat
-    // -------------------------------------------------------
-    /**
-     * Chuyển đổi BufferedImage sang OpenCV Mat (BGR).
-     */
     private Mat bufferedImageToMat(BufferedImage bi) {
         try {
-            // Đảm bảo ảnh dạng BGR (TYPE_3BYTE_BGR)
             BufferedImage converted = new BufferedImage(
                     bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
             Graphics2D g = converted.createGraphics();
@@ -312,12 +254,6 @@ public class RegisterPanel extends JPanel {
         }
     }
 
-    // -------------------------------------------------------
-    // Util: Mat (embedding) → float[]
-    // -------------------------------------------------------
-    /**
-     * Chuyển Mat embedding (1 hàng, N cột, CV_32F) sang float[].
-     */
     private float[] matToFloatArray(Mat mat) {
         int size = (int) mat.total();
         float[] result = new float[size];
@@ -325,9 +261,6 @@ public class RegisterPanel extends JPanel {
         return result;
     }
 
-    // -------------------------------------------------------
-    // Util: Button style
-    // -------------------------------------------------------
     private void setButtonStyle(JButton btn, Color bgColor) {
         btn.setBackground(bgColor);
         btn.setForeground(Color.WHITE);
@@ -337,9 +270,6 @@ public class RegisterPanel extends JPanel {
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
     }
 
-    // -------------------------------------------------------
-    // Stop camera khi đóng panel
-    // -------------------------------------------------------
     public void stopCamera() {
         cameraPanel.stopCamera();
         DatabaseConnection.getInstance().closeConnection();

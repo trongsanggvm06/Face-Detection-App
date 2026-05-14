@@ -23,7 +23,7 @@ public class MainFrame extends JFrame {
     private int currentTab = 0; // Tab đang active (mặc định: Đăng ký)
 
     public MainFrame() {
-        setTitle("Face Detection App – BTL Java");
+        setTitle("Face Detection App");
         setSize(1100, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,9 +36,9 @@ public class MainFrame extends JFrame {
         // TabbedPane
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
-        tabbedPane.addTab("📷  Đăng ký",   registerPanel);
-        tabbedPane.addTab("🔍  Nhận diện", recognizePanel);
-        tabbedPane.addTab("🗂  Quản lý",   managePanel);
+        tabbedPane.addTab(" Đăng ký",   registerPanel);
+        tabbedPane.addTab("Nhận diện", recognizePanel);
+        tabbedPane.addTab("Quản lý",   managePanel);
 
         // Quản lý camera theo tab: chỉ mở camera của tab đang chọn
         tabbedPane.addChangeListener(e -> {
