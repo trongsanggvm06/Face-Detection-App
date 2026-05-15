@@ -41,16 +41,10 @@ public class RecognizePanel extends JPanel {
     private static final Color DANGER = new Color(220, 53, 69);
     private static final Color ORANGE = new Color(255, 140, 0);
 
-    // -----------------------------------------------------------
-    // AI + DAO
-    // -----------------------------------------------------------
     private FaceDetector faceDetector;
     private FaceRecognizer faceRecognizer;
     private DetectionLogDAO dao;
 
-    // -----------------------------------------------------------
-    // Recognition control
-    // -----------------------------------------------------------
     private Thread recognitionThread;
     private volatile boolean running = false;
 
@@ -95,13 +89,11 @@ public class RecognizePanel extends JPanel {
         scoreLabel.setForeground(TEXT);
         scoreLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Status
         statusLabel = new JLabel("Chưa bắt đầu");
         statusLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         statusLabel.setForeground(ORANGE);
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Bảng lịch sử nhận diện
         String[] cols = { "Thời gian", "Tên", "Score" };
         tableModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) {
@@ -191,7 +183,6 @@ public class RecognizePanel extends JPanel {
 
     private void stopRecognition() {
         running = false;
-        // Tắt bounding box
         cameraPanel.setFaceDetector(null);
         btnStartStop.setText(" Bắt đầu nhận diện");
         btnStartStop.setBackground(SUCCESS);
@@ -201,7 +192,6 @@ public class RecognizePanel extends JPanel {
         statusLabel.setForeground(ORANGE);
     }
 
-    // -----------------------------------------------------------
     private void recognitionLoop(List<GalleryEntry> gallery) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
@@ -277,9 +267,6 @@ public class RecognizePanel extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------
-    // So khớp embedding với gallery → trả về {name, score%}
-    // -----------------------------------------------------------
     private String[] findBestMatch(float[] query, List<GalleryEntry> gallery) {
         String bestName = "UNKNOWN";
         double bestScore = -1.0;

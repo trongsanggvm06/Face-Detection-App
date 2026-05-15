@@ -49,7 +49,6 @@ public class CameraPanel extends JPanel {
                                 detector.drawFaces(frame, faces);
                             }
                         } catch (Exception e) {
-                            // Bỏ qua lỗi detect để không crash camera thread
                         }
                     }
 

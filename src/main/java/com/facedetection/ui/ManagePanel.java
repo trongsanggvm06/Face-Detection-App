@@ -28,15 +28,11 @@ public class ManagePanel extends JPanel {
 
     private static final String GALLERY_FILE = "gallery.dat";
 
-    // -----------------------------------------------------------
-    // Constructor
-    // -----------------------------------------------------------
     public ManagePanel() {
         setLayout(new BorderLayout(10, 10));
         setBackground(BG);
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // ---- Header ----
         JLabel header = new JLabel("QUẢN LÝ GALLERY KHUÔN MẶT");
         header.setFont(new Font("Arial", Font.BOLD, 18));
         header.setForeground(PRIMARY);
@@ -90,8 +86,6 @@ public class ManagePanel extends JPanel {
         refreshTable();
     }
 
-    // -----------------------------------------------------------
-    // Load gallery.dat → hiển thị vào table
     public void refreshTable() {
         tableModel.setRowCount(0);
         List<GalleryEntry> entries = loadGallery();
